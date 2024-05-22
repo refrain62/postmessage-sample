@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+
+<!-- このファイルを最初に指定して実行してください -->
+<!-- http://127.0.0.1:8080/src.html で実行してください -->
+
+<head>
+  <meta charset="UTF-8">
+  <title>送信元</title>
+  <script>
+    //メッセージ受け取り時に許可するドメインのパターン(正規表現)
+    const acceptDomainPattern = /localhost:8080/;
+    // 別タブで開くURL
+    const openURL = "http://localhost:8080/popup.html";
+
+    // 新規タブを開く
+    const popup = () => {
+      window.open(openURL);
+    }
+
+    // データを送る
+    const send = (w, m = "", origin = "*") => {
+      console.log('データを送信するよ')
+
+      w.postMessage({
+        action: 'SyncMessage',
+        message: m,
+      }, origin);
+    }
+
+    // 通知を受け取ったら、データを送りつける
+    window.addEventListener('message', (event) => {
+      if (!acceptDomainPattern.test(event.origin)) {
+        //許可するドメイン以外は終了
+        return;
+      }
+
+      if (event.data.action == 'Notification') {
+        console.log('データを受け取ったよ');
+
+        const input = document.getElementById("input").value;
+        
+        send(event.source, input, event.origin);
+      }
+    });
+  </script>
+</head>
+
+<body>
+  <h1>送信元</h1>
+  <textarea id="input">このテキストを送るよ！</textarea>
+  <input type="button" value="別タブを開く" onclick="popup();" />
+</body>
+
+</html>

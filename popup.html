@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+
+<!-- http://localhost:8080/popup.html で実行してください -->
+
+<head>
+  <meta charset="UTF-8">
+  <title>受け取り側</title>
+</head>
+
+<body>
+  <h1>受け取り側</h1>
+  <p id="text">データが来てないよ</p>
+</body>
+
+<script>
+  //このwindowを開いたサイトのドメイン
+  const srcDomain = document.referrer.match(/^.+:\/\/[^\/]+/)[0];
+  //通信許可するドメインのパターン(正規表現)
+  const acceptDomainPattern = /127.0.0.1/;
+
+  // データを受け取る処理
+  window.addEventListener('message', (event) => {
+    if (!acceptDomainPattern.test(event.origin)) {
+      //許可するドメイン以外は終了
+      return;
+    }
+    
+    if (event.data.action == 'SyncMessage') {
+      console.log('データを受け取ったよ');
+
+      // メッセージ内容を設定
+      document.getElementById("text").innerText = event.data.message;
+    }
+  });
+
+  // ファイルが読み込まれたら親に通知する
+  console.log('親に通知するよ');
+
+  try {
+    if (acceptDomainPattern.test(srcDomain)) {
+      window.opener.postMessage({
+        action: 'Notification',
+        message: 'ok',
+      }, srcDomain);
+    }
+  } catch (e) {
+    console.log('エラーだよ！');
+    
+    document.getElementById("text").innerText = '親が見つからない。。。';
+  }
+</script>
+
+</html>
