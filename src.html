@@ -12,10 +12,13 @@
     const acceptDomainPattern = /localhost:8080/;
     // 別タブで開くURL
     const openURL = "http://localhost:8080/popup.html";
+    // 別タブで開いたウインドウ
+    var win = null;
 
     // 新規タブを開く
     const popup = () => {
-      window.open(openURL);
+      // ちょっと雑にvarに開いたwindowのハンドルを持つ
+      win = window.open(openURL);
     }
 
     // データを送る
@@ -28,7 +31,18 @@
       }, origin);
     }
 
-    // 通知を受け取ったら、データを送りつける
+    // 今のデータを送るボタン押下時
+    const dataSend = () => {
+      // 入力されている内容を保持
+      const input = document.getElementById("input").value;
+
+      // 別ウインドウにデータを送信
+      if (win) {
+        send(win, input, "*");
+      }
+    }
+
+    // 別窓から開いたウインドウからきた通知を受け取ったら、データを送りつける
     window.addEventListener('message', (event) => {
       if (!acceptDomainPattern.test(event.origin)) {
         //許可するドメイン以外は終了
@@ -39,7 +53,7 @@
         console.log('データを受け取ったよ');
 
         const input = document.getElementById("input").value;
-        
+
         send(event.source, input, event.origin);
       }
     });
@@ -50,6 +64,8 @@
   <h1>送信元</h1>
   <textarea id="input">このテキストを送るよ！</textarea>
   <input type="button" value="別タブを開く" onclick="popup();" />
+
+  <input type="button" value="今のデータを送る" onclick="dataSend();" />
 </body>
 
 </html>
